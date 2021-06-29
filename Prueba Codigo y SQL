@@ -1,0 +1,103 @@
+# Reto técnico
+
+Para resolver las preguntas siguientes se realizo un debugueo sobre el codigo que arrojo la liga (https://api.stackexchange.com/2.2/search?order=desc&sort=activity&intitle=perl&site=stackoverflow)
+
+1. Conectarse al enlace
+1. Obtener el número de respuestas contestadas y no contestadas
+ -- total de respuestas contestadas 24
+ -- total de respuesta no contestadas 6 
+1. Obtener la respuesta con mayor owners
+ -- id_pregunta 68141512 con mayor numero de owners "11676"
+1. Obtener la respuesta con menor número de vistas
+ -- id_pregunta 68170283 con menor numero de vistas "12"
+1. Obtener la respuesta más vieja y más actual
+ -- id_respuesta mas vieja "350018" 
+ -- id_respuesta mas actual "68170283"
+1. Imprimir en consola del punto 2 al 5
+
+### SQL
+
+Se tienen las siguientes tablas que contienen información referente hacia los vuelos que se realizan en México
+
+*Tabla de aerolíneas*
+
+| id_aerolinea | nombre_aerolinea |
+|---|---|
+| 1 | Volaris |
+| 2 | Aeromar |
+| 3 | Interjet |
+| 4 | Aeromexico |
+
+*Tabla de aeropuertos*
+
+| id_aeropuerto  |  nombre_aerolinea |
+|---|---|
+| 1 | Benito Juarez |
+| 2 | Guanajuato |
+| 3 | La paz |
+| 4 | Oaxaca |
+
+*Tabla de movimientos*
+
+| id_movimiento  |  descripcion |
+|---|---|
+| 1 | Salida |
+| 2 | Llegada |
+
+*Tabla de vuelos*
+
+| id_aerolinea  |  id_aeropuerto |  id_movimiento | dia |
+|---|---|---|---|
+| 1 | 1 | 1 | 2021-05-02 |
+| 2 | 1 | 1 | 2021-05-02 |
+| 3 | 2 | 2 | 2021-05-02 |
+| 4 | 3 | 2 | 2021-05-02 |
+| 1 | 3 | 2 | 2021-05-02 |
+| 2 | 1 | 1 | 2021-05-02 |
+| 2 | 3 | 1 | 2021-05-04 |
+| 3 | 4 | 1 | 2021-05-04 |
+| 3 | 4 | 1 | 2021-05-04 |
+
+*Se requiere saber lo siguiente*
+
+1. ¿Cuál es el nombre aeropuerto que ha tenido mayor movimiento durante el año?
+SELECT a.nombre_aerolinea,
+count(a.nombre_aerolinea) as Total
+FROM 
+aeropuerto a
+INNER JOIN vuelos v ON a.id_aeropuerto = v.id_aeropuerto
+INNER JOIN movimientos m ON m.id_movimiento = v.id_movimiento
+
+GROUP BY a.nombre_aerolinea
+ORDER BY Total DESC;
+
+1. ¿Cuál es el nombre aerolínea que ha realizado mayor número de vuelos durante el año?
+SELECT
+a.nombre_aerolinea,
+m.descripcion
+FROM 
+aerolineas a
+INNER JOIN vuelos v ON a.id_aerolinea = v.id_aeropuerto
+INNER JOIN movimientos m ON m.id_movimiento = v.id_movimiento
+WHERE YEAR (v.dia) = 2021;
+
+1. ¿En qué día se han tenido mayor número de vuelos?
+SELECT 
+v.dia,
+count(v.dia) as Mas_vuelos
+FROM 
+vuelos v
+INNER JOIN aerolineas a ON v.id_aerolinea = a.id_aerolinea
+INNER JOIN movimientos m on m.id_movimiento = v.id_movimiento
+
+group by v.dia
+order by Mas_vuelos desc;
+
+1. ¿Cuáles son las aerolíneas que tienen mas de 2 vuelos por día?
+SElECT * FROM(
+SELECT  v.dia,
+v.id_aerolinea,
+count(*) AS Vuelos
+FROM vuelos v
+GROUP BY v.id_aerolinea, v.dia) v
+WHERE Vuelos > 1
